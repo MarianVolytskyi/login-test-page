@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import * as Services from '../api/api';
 import { User } from '../types/User';
 import { Data } from '../types/Data';
@@ -6,6 +6,7 @@ import PaginationComponent from './Pagination';
 import EditForm from './EditForm';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { peopleFilter } from '../utils/filterFunc';
 
 
 const convertDateFormat = (dateString: string): string | null => {
@@ -14,15 +15,15 @@ const convertDateFormat = (dateString: string): string | null => {
     const year: string = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
     return `${year}-${parts[1]}-${parts[0]}`;
   } else {
-    return null; // або обробіть помилку в інший спосіб
+    return null;
   }
 };
 
 const TablePage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [paginationData, setPaginationData] = useState<Data>({});
+  const [paginationData, setPaginationData] = useState<Data | null>(null);
   const [editedUser, setEditedUser] = useState<User | null>(null);
- 
+  const [query, setQuery] = useState("");
 
   const editUser = (user: User) => {
 
@@ -47,7 +48,7 @@ const TablePage: React.FC = () => {
 
   useEffect(() => {
     Services.getUsers()
-      .then((data:Data) => {
+      .then((data: Data) => {
         setUsers(data.results);
         setPaginationData(data);
       })
@@ -63,9 +64,60 @@ const TablePage: React.FC = () => {
       .catch(() => { });
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    const url = new URL(window.location.href);
+    const searchParams = new URLSearchParams(url.search);
+    if (value.trim() === '') {
+      searchParams.delete('search');
+    } else {
+      searchParams.set('search', value);
+    }
+    window.history.replaceState(null, '', `${url.pathname}?${searchParams.toString()}`);
+    localStorage.setItem('searchParams', JSON.stringify({ search: value }));
+  };
+  
+  useEffect(() => {
+    const searchParams = JSON.parse(localStorage.getItem('searchParams') || '{}');
+    setQuery(searchParams.search || '');
+  }, []);
+
+  useEffect(() => {
+    const searchParams = JSON.parse(localStorage.getItem('searchParams') || '{}');
+    const savedQuery = searchParams.search || '';
+    setQuery(savedQuery);
+
+    const url = new URL(window.location.href);
+    const searchParamsFromUrl = new URLSearchParams(url.search);
+    const savedSearchParams = JSON.parse(localStorage.getItem('searchParams') || '{}');
+
+    Object.keys(savedSearchParams).forEach((key) => {
+      searchParamsFromUrl.set(key, savedSearchParams[key]);
+    });
+
+    window.history.replaceState(null, '', `${url.pathname}?${searchParamsFromUrl.toString()}`);
+  }, []);
+
+  const visiblePeople = useMemo(() => (
+    peopleFilter(users,
+      {
+        query,
+      })
+  ), [query, users]);
+
   return (
-    <div>
-      <h2 className='title'>Table Page</h2>
+    <div className='container'>
+      <h2 className='title mt-5'>Table Page</h2>
+      <div >
+        <input
+          className='input mb-2'
+          type="text"
+          value={query}
+          onChange={handleSearchChange}
+          placeholder="Search by name or email"
+        />
+      </div>
       <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
         <thead>
           <tr>
@@ -78,7 +130,7 @@ const TablePage: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {visiblePeople.map((user) => (
             <tr key={user.id} onClick={() => setEditedUser(user)}>
               <td >{user.id}</td>
               <td>{user.name}</td>
@@ -90,15 +142,20 @@ const TablePage: React.FC = () => {
           ))}
         </tbody>
       </table>
-
-      <PaginationComponent
+      {paginationData && <PaginationComponent
         count={paginationData.count}
         next={paginationData.next}
         previous={paginationData.previous}
         fetchData={handlePageChange}
-      />
+      />}
 
-      {editedUser && <EditForm user={editedUser} onClose={() => setEditedUser(null)} onSave={editUser} />}
+
+      {editedUser &&
+        <EditForm
+          user={editedUser}
+          onClose={() => setEditedUser(null)}
+          onSave={editUser}
+        />}
     </div>
   );
 };

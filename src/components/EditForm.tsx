@@ -9,26 +9,31 @@ type Props = {
 };
 
 const EditForm: React.FC<Props> = ({ user, onClose, onSave }) => {
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<User>({ 
+    id: 0, 
+    name: "", 
+    birthday_date: "", 
+    email: "", 
+    phone_number: "", 
+    address: "" 
+  });
 
 useEffect(() => {
   Services.getUserById(user.id)
   .then((data)=>setUserData(data))
   return () => {
   }
-}, [])
+}, [user.id])
 
-  console.log(userData);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setUserData((prevData) => {
-      if (prevData) {
-        return { ...prevData, [name]: value };
-      }
-      return null;
-    });
-  };
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+  setUserData((prevData) => {
+    if (prevData) {
+      return { ...prevData, [name]: value };
+    }
+    return prevData; // повертаємо prevData, якщо воно існує
+  });
+};
 
   const handleSave = async(user:User) => {
     await onSave(user);
@@ -36,6 +41,7 @@ useEffect(() => {
   };
 
   return (
+
     <div className="modal is-active">
   <div className="modal-background" onClick={onClose}></div>
   <div className="modal-content">
