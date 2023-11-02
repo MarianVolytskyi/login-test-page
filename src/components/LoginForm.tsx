@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Button, TextField, Card, CardContent, Typography, Container, InputAdornment, IconButton } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useState } from 'react';
 
 type FormData = {
   username: string;
@@ -20,7 +23,11 @@ const LoginForm: React.FC<Props> = ({ login }) => {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
+  const [showPassword, setShowPassword] = useState(false);
 
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -37,7 +44,7 @@ const LoginForm: React.FC<Props> = ({ login }) => {
         navigate("/table");
       }
     } catch (error) {
-      toast.error(`Wrong login or password. Please try again`,{
+      toast.error(`Wrong login or password. Please try again`, {
         position: "top-center",
         autoClose: 1000,
       });
@@ -45,46 +52,52 @@ const LoginForm: React.FC<Props> = ({ login }) => {
   };
 
   return (
-    <section className="section section-login">
-      <div className="container ">
-        <h2 className="title">Login page</h2>
-        <div className="login-form is-flex is-justify-content-center">
+    <Container maxWidth="xs" sx={{ marginTop: 8 }}>
+      <Card>
+        <CardContent>
+          <Typography variant="h5" component="h2" align="center" gutterBottom>
+            Login page
+          </Typography>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="field">
-              <label className="label">Username</label>
-              <div className="control">
-                <input
-                  className="input"
-                  type="text"
-                  placeholder="Username"
-                  {...register("username", { required: true })}
-                />
-                {errors.username && <p style={{ color: "red" }}>This field is required</p>}
-              </div>
-            </div>
-            <div className="field">
-              <label className="label">Password</label>
-              <div className="control">
-                <input
-                  className="input"
-                  type="password"
-                  placeholder="Password"
-                  {...register("password", { required: true })}
-                />
-                {errors.password && <p style={{ color: "red" }}>This field is required</p>}
-              </div>
-            </div>
-            <div className="field">
-              <div className="control">
-                <button className="button is-primary" type="submit">
-                  Submit
-                </button>
-              </div>
-            </div>
+            <TextField
+              fullWidth
+              label="Username"
+              placeholder="Username"
+              {...register("username", { required: true })}
+              error={!!errors.username}
+              helperText={errors.username ? "This field is required" : ""}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              {...register("password", { required: true })}
+              error={!!errors.password}
+              helperText={errors.password ? "This field is required" : ""}
+              margin="normal"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                      onMouseDown={(e) => e.preventDefault()}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }}
+            />
+            <Button fullWidth variant="contained" type="submit" sx={{ marginTop: 2 }}>
+              Submit
+            </Button>
           </form>
-        </div>
-      </div>
-    </section>
+        </CardContent>
+      </Card>
+    </Container>
   );
 };
 

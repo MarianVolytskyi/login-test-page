@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as Services from '../api/api';
 import { User } from '../types/User';
-
+import { TextField, Button, Modal, Box } from '@mui/material';
 type Props = {
   user: User;
   onClose?: () => void;
@@ -9,122 +9,103 @@ type Props = {
 };
 
 const EditForm: React.FC<Props> = ({ user, onClose, onSave }) => {
-  const [userData, setUserData] = useState<User>({ 
-    id: 0, 
-    name: "", 
-    birthday_date: "", 
-    email: "", 
-    phone_number: "", 
-    address: "" 
+  const [userData, setUserData] = useState<User>({
+    id: 0,
+    name: "",
+    birthday_date: "",
+    email: "",
+    phone_number: "",
+    address: ""
   });
 
-useEffect(() => {
-  Services.getUserById(user.id)
-  .then((data)=>setUserData(data))
-  return () => {
-  }
-}, [user.id])
+  useEffect(() => {
+    Services.getUserById(user.id)
+      .then((data) => setUserData(data));
+  }, [user.id]);
 
-const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
-  setUserData((prevData) => {
-    if (prevData) {
-      return { ...prevData, [name]: value };
-    }
-    return prevData; // повертаємо prevData, якщо воно існує
-  });
-};
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setUserData((prevData) => {
+      if (prevData) {
+        return { ...prevData, [name]: value };
+      }
+      return prevData;
+    });
+  };
 
-  const handleSave = async(user:User) => {
+  const handleSave = async (user: User) => {
     await onSave(user);
-    onClose
+    onClose && onClose();
   };
 
   return (
-
-    <div className="modal is-active">
-  <div className="modal-background" onClick={onClose}></div>
-  <div className="modal-content">
-    <div className="box">
-      <form>
-        <div className="field">
-          <label className="label">Name</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              name="name"
-              value={userData?.name}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <label className="label">Birthday Date</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              name="birthday_date"
-              value={userData?.birthday_date}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <label className="label">Email</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              name="email"
-              value={userData?.email}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <label className="label">Phone Number</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              name="phone_number"
-              value={userData?.phone_number}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-        <div className="field">
-          <label className="label">Address</label>
-          <div className="control">
-            <input
-              className="input"
-              type="text"
-              name="address"
-              value={userData?.address}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-        <div className="field is-grouped">
-          <div className="control">
-            <button className="button is-link" onClick={()=>handleSave(userData)}>
+    <Modal open={true} onClose={onClose}>
+     <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          width: 400,
+          bgcolor: 'background.paper',
+          p: 2,
+          margin: 'auto', 
+          marginTop: '15vh',
+          outline: 'none'
+        }}
+      >
+        <form>
+          <TextField
+            label="Name"
+            name="name"
+            value={userData?.name}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Birthday Date"
+            name="birthday_date"
+            value={userData?.birthday_date}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Email"
+            name="email"
+            value={userData?.email}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Phone Number"
+            name="phone_number"
+            value={userData?.phone_number}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Address"
+            name="address"
+            value={userData?.address}
+            onChange={handleInputChange}
+            fullWidth
+            margin="normal"
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+            <Button variant="contained" onClick={() => handleSave(userData)}>
               Save
-            </button>
-          </div>
-          <div className="control">
-            <button className="button is-link is-light" onClick={onClose}>
+            </Button>
+            <Button variant="outlined" onClick={onClose}>
               Cancel
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
-  <button className="modal-close is-large" aria-label="close" onClick={onClose}></button>
-</div>
-
+            </Button>
+          </Box>
+        </form>
+      </Box>
+    </Modal>
   );
 };
 

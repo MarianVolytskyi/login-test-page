@@ -4,11 +4,19 @@ import { User } from '../types/User';
 import { client } from '../utils/fetch';
 import axios from 'axios';
 
+//const BASE_URL = 'https://technical-task-api.icapgroupgmbh.com/api';
+
 export const getUsers = () => {
   return client.get<Data>(`/table`);
 };
 export const getUserById = (id: number) => {
-  return client.get<User>(`/table/${id}`);
+  const url = `https://technical-task-api.icapgroupgmbh.com/api/table/${id}`;
+
+  return axios.get<User>(url)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw new Error(`Failed to fetch user with id ${id}: ${error}`);
+    });
 };
 
 export const deleteUser= (todoId: number) => {

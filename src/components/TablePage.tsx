@@ -7,7 +7,11 @@ import EditForm from './EditForm';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { peopleFilter } from '../utils/filterFunc';
+import { Typography, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 
+type Props = {
+  login: (value: boolean) => void;
+};
 
 const convertDateFormat = (dateString: string): string | null => {
   const parts: string[] = dateString.split('-');
@@ -19,7 +23,7 @@ const convertDateFormat = (dateString: string): string | null => {
   }
 };
 
-const TablePage: React.FC = () => {
+const TablePage: React.FC<Props> = ({ login }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [paginationData, setPaginationData] = useState<Data | null>(null);
   const [editedUser, setEditedUser] = useState<User | null>(null);
@@ -77,7 +81,7 @@ const TablePage: React.FC = () => {
     window.history.replaceState(null, '', `${url.pathname}?${searchParams.toString()}`);
     localStorage.setItem('searchParams', JSON.stringify({ search: value }));
   };
-  
+
   useEffect(() => {
     const searchParams = JSON.parse(localStorage.getItem('searchParams') || '{}');
     setQuery(searchParams.search || '');
@@ -108,40 +112,50 @@ const TablePage: React.FC = () => {
 
   return (
     <div className='container'>
-      <h2 className='title mt-5'>Table Page</h2>
-      <div >
-        <input
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px' }}>
+        <Typography variant="h5">Table Page</Typography>
+        <Button variant="contained" color="warning" onClick={() => login(false)}>Logout</Button>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <TextField
+          fullWidth
+          margin="dense"
           className='input mb-2'
-          type="text"
+          label="Search by name or email"
+          variant="outlined"
           value={query}
           onChange={handleSearchChange}
-          placeholder="Search by name or email"
         />
       </div>
-      <table className="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Birthday Date</th>
-            <th>Email</th>
-            <th>Phone Number</th>
-            <th>Address</th>
-          </tr>
-        </thead>
-        <tbody>
-          {visiblePeople.map((user) => (
-            <tr key={user.id} onClick={() => setEditedUser(user)}>
-              <td >{user.id}</td>
-              <td>{user.name}</td>
-              <td>{user.birthday_date}</td>
-              <td>{user.email}</td>
-              <td>{user.phone_number}</td>
-              <td>{user.address}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow >
+              <TableCell >ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Birthday Date</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Phone Number</TableCell>
+              <TableCell>Address</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {visiblePeople.map((user) => (
+              <TableRow key={user.id} onClick={() => setEditedUser(user)}>
+                <TableCell>{user.id}</TableCell>
+                <TableCell>{user.name}</TableCell>
+                <TableCell>{user.birthday_date}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.phone_number}</TableCell>
+                <TableCell>{user.address}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       {paginationData && <PaginationComponent
         count={paginationData.count}
         next={paginationData.next}
@@ -149,13 +163,7 @@ const TablePage: React.FC = () => {
         fetchData={handlePageChange}
       />}
 
-
-      {editedUser &&
-        <EditForm
-          user={editedUser}
-          onClose={() => setEditedUser(null)}
-          onSave={editUser}
-        />}
+      {editedUser && <EditForm user={editedUser} onClose={() => setEditedUser(null)} onSave={editUser} />}
     </div>
   );
 };

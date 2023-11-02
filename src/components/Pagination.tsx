@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import { Pagination, Stack, Select, MenuItem } from '@mui/material';
 type Props = {
   count: number;
   fetchData: (url: string) => void;
@@ -7,7 +7,7 @@ type Props = {
   previous: string | null;
 };
 
-const PaginationComponent: React.FC<Props> = ({ count, fetchData, next, previous }) => {
+const PaginationComponent: React.FC<Props> = ({ count, fetchData }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const totalPages = Math.ceil(count / itemsPerPage);
@@ -41,42 +41,24 @@ const PaginationComponent: React.FC<Props> = ({ count, fetchData, next, previous
   }
 
   return (
-    <div className="pagination is-rounded" style={{ display: 'flex', justifyContent: 'center' }}>
-      <button className="pagination-link" onClick={() => handlePageChange(currentPage - 1)} disabled={!previous}>
-        Previous
-      </button>
-      {currentPage <= 2 ? pageNumbers.slice(0, 3) : (
-        <>
-          {pageNumbers[0]}
-          <p>...</p>
-          {pageNumbers.slice(currentPage - 2, currentPage + 1)}
-          {currentPage > totalPages - 2 ? null : (
-            <>
-              <p>...</p>
-              {pageNumbers[pageNumbers.length - 1]}
-            </>
-          )}
-        </>
-      )}
+    <Stack direction="row" justifyContent="center" alignItems="center" spacing={2} sx={{ marginTop: '20px' }}>
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={(event, value) => handlePageChange(value)}
+        shape="rounded"
+      />
 
-      <button className="pagination-link" onClick={() => handlePageChange(currentPage + 1)} disabled={!next}>
-        Next
-      </button>
-      
-      <div className="select ml-3">
-        <select
-          value={itemsPerPage}
-          onChange={(e) => selectItemsPerPage(Number(e.target.value))}
-
-        >
-          <option value={10}>10 / page</option>
-          <option value={20}>20 / page</option>
-          <option value={50}>50 / page</option>
-        </select>
-      </div>
-
-
-    </div>
+      <Select
+        value={itemsPerPage}
+        onChange={(e) => selectItemsPerPage(Number(e.target.value))}
+        variant="outlined"
+      >
+        <MenuItem value={10}>10 / page</MenuItem>
+        <MenuItem value={20}>20 / page</MenuItem>
+        <MenuItem value={50}>50 / page</MenuItem>
+      </Select>
+    </Stack>
   );
 };
 
